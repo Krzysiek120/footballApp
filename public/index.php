@@ -67,6 +67,48 @@ elseif ($method === 'GET' && $path === '/statistics') {
         echo json_encode(['error' => $e->getMessage()]);
     }
 }
+elseif ($method === 'GET' && $path === '/stream') {
+    header('Cache-Control: no-cache');
+    header('Content-Type: text/event-stream');
+    header('Connection: keep-alive');
+    header('X-Accel-Buffering: no');
+
+    $queueFile = __DIR__ . '/../storage/sse_queue.txt';
+    if (!file_exists($queueFile)) {
+        touch($queueFile);
+    }
+
+    $lastPos = filesize($queueFile);
+    set_time_limit(0);
+
+    while (true) {
+        if (connection_aborted()) {
+            break;
+        }
+
+        clearstatcache(true, $queueFile);
+        $currentPos = filesize($queueFile);
+
+        if ($currentPos > $lastPos) {
+            $handle = fopen($queueFile, 'r');
+            fseek($handle, $lastPos);
+
+            while (($line = fgets($handle)) !== false) {
+                if (trim($line) !== '') {
+                    echo "data: " . trim($line) . "\n\n";
+                }
+            }
+
+            $lastPos = ftell($handle);
+            fclose($handle);
+
+            ob_flush();
+            flush();
+        }
+
+        usleep(500000);
+    }
+}
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Not found']);

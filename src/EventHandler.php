@@ -27,6 +27,9 @@ class EventHandler
 
         $this->storage->save($event);
 
+        $queueFile = __DIR__ . '/../storage/sse_queue.txt';
+        file_put_contents($queueFile, json_encode($event) . PHP_EOL, FILE_APPEND | LOCK_EX);
+
         // Update statistics for events
         if ($data['type'] === 'foul') {
             if (!isset($data['match_id']) || !isset($data['team_id'])) {
