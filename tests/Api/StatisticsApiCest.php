@@ -9,8 +9,7 @@ class StatisticsApiCest
     public function _before(ApiTester $I)
     {
         // Clean up storage files before each test
-        $I->deleteFile('storage/events.txt');
-        $I->deleteFile('storage/statistics.txt');
+        $I->deleteFile('storage/database.sqlite');
     }
 
     public function testGetTeamStatistics(ApiTester $I)
@@ -25,7 +24,7 @@ class StatisticsApiCest
             'minute' => 15,
             'second' => 34
         ]);
-        
+
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPOST('/event', [
             'type' => 'foul',
@@ -35,10 +34,10 @@ class StatisticsApiCest
             'minute' => 30,
             'second' => 33
         ]);
-        
+
         // Now get team statistics
         $I->sendGET('/statistics?match_id=m1&team_id=arsenal');
-        
+
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -62,7 +61,7 @@ class StatisticsApiCest
             'minute' => 15,
             'second' => 34
         ]);
-        
+
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPOST('/event', [
             'type' => 'foul',
@@ -72,10 +71,10 @@ class StatisticsApiCest
             'minute' => 30,
             'second' => 33
         ]);
-        
+
         // Get all match statistics
         $I->sendGET('/statistics?match_id=m1');
-        
+
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -94,7 +93,7 @@ class StatisticsApiCest
     public function testGetStatisticsWithoutMatchId(ApiTester $I)
     {
         $I->sendGET('/statistics');
-        
+
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -105,7 +104,7 @@ class StatisticsApiCest
     public function testGetStatisticsForNonExistentTeam(ApiTester $I)
     {
         $I->sendGET('/statistics?match_id=m1&team_id=nonexistent');
-        
+
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -118,7 +117,7 @@ class StatisticsApiCest
     public function testGetStatisticsForNonExistentMatch(ApiTester $I)
     {
         $I->sendGET('/statistics?match_id=nonexistent');
-        
+
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
