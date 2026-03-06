@@ -9,7 +9,7 @@ class EventApiCest
     public function _before(ApiTester $I)
     {
         // Clean up storage files before each test
-        $I->deleteFile('storage/events.txt');
+        $I->deleteFile('storage/database.sqlite');
         $I->deleteFile('storage/statistics.txt');
     }
 
@@ -24,7 +24,7 @@ class EventApiCest
             'minute' => 45,
             'second' => 34
         ]);
-        
+
         $I->seeResponseCodeIs(201);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -40,11 +40,11 @@ class EventApiCest
         $I->sendPOST('/event', [
             'type' => 'foul',
             'player' => 'William Saliba',
-                'minute' => 45,
+            'minute' => 45,
             'second' => 34
             // Missing team_id and match_id
         ]);
-        
+
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -56,7 +56,7 @@ class EventApiCest
     {
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPOST('/event', 'invalid json');
-        
+
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
@@ -72,7 +72,7 @@ class EventApiCest
             'minute' => 23,
             'second' => 34
         ]);
-        
+
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
